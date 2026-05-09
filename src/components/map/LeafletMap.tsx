@@ -10,6 +10,7 @@ type Props = {
   facilities: Doc<"facilities">[];
   selectedId?: string;
   onSelect?: (id: string) => void;
+  locateTrigger?: number;
 };
 
 function makeIcon(parkingCategory: string) {
@@ -31,10 +32,18 @@ function makeIcon(parkingCategory: string) {
   });
 }
 
-export function LeafletMap({ facilities, selectedId, onSelect }: Props) {
+const locationIcon = L.divIcon({
+  html: `<div style="width:14px;height:14px;background:#2563eb;border:3px solid white;border-radius:50%;box-shadow:0 0 0 3px rgba(37,99,235,0.3)"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  className: "",
+});
+
+export function LeafletMap({ facilities, selectedId, onSelect, locateTrigger }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const locationMarkerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -58,6 +67,7 @@ export function LeafletMap({ facilities, selectedId, onSelect }: Props) {
     };
   }, []);
 
+  // マーカー更新
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -65,7 +75,6 @@ export function LeafletMap({ facilities, selectedId, onSelect }: Props) {
     const existingIds = new Set(markersRef.current.keys());
     const newIds = new Set(facilities.map((f) => String(f._id)));
 
-    // 削除
     for (const id of existingIds) {
       if (!newIds.has(id)) {
         markersRef.current.get(id)?.remove();
@@ -73,7 +82,6 @@ export function LeafletMap({ facilities, selectedId, onSelect }: Props) {
       }
     }
 
-    // 追加
     for (const facility of facilities) {
       const fid = String(facility._id);
       if (markersRef.current.has(fid)) continue;
@@ -85,16 +93,17 @@ export function LeafletMap({ facilities, selectedId, onSelect }: Props) {
       });
 
       marker.bindPopup(`
-        <div style="min-width:200px">
-          <p style="font-weight:600;margin:0 0 4px">${facility.name}</p>
-          <p style="font-size:12px;color:#666;margin:0 0 4px">${category.icon} ${category.label}</p>
-          <span style="display:inline-block;background:${parking.color};color:white;font-size:11px;padding:1px 6px;border-radius:4px;margin-bottom:4px">
+        <div style="min-width:200px;font-family:sans-serif">
+          <p style="font-weight:600;font-size:14px;margin:0 0 4px;line-height:1.4">${facility.name}</p>
+          <p style="font-size:12px;color:#666;margin:0 0 6px">${category.icon} ${category.label}</p>
+          <span style="display:inline-block;background:${parking.color};color:white;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px">
             ${facility.parkingCategory}：${parking.label}
           </span>
-          <p style="font-size:12px;margin:4px 0 0">${facility.address}</p>
-          <a href="/facilities/${fid}" style="font-size:12px;color:#2563eb">詳細を見る →</a>
+          ${facility.parkingDetails.freeCondition ? `<p style="font-size:11px;color:#444;margin:4px 0">📋 ${facility.parkingDetails.freeCondition}</p>` : ""}
+          <p style="font-size:11px;color:#888;margin:4px 0 6px">📍 ${facility.address}</p>
+          <a href="/facilities/${fid}" style="font-size:12px;color:#2563eb;font-weight:500;text-decoration:none">詳細を見る →</a>
         </div>
-      `);
+      `, { maxWidth: 260 });
 
       marker.on("click", () => onSelect?.(fid));
       marker.addTo(map);
@@ -111,6 +120,26 @@ export function LeafletMap({ facilities, selectedId, onSelect }: Props) {
       marker.openPopup();
     }
   }, [selectedId]);
+
+  // 現在地取得
+  useEffect(() => {
+    if (!locateTrigger || !mapRef.current) return;
+    const map = mapRef.current;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        locationMarkerRef.current?.remove();
+        locationMarkerRef.current = L.marker([lat, lng], { icon: locationIcon })
+          .addTo(map)
+          .bindPopup("現在地");
+        map.setView([lat, lng], 14, { animate: true });
+      },
+      () => {
+        alert("現在地を取得できませんでした。位置情報の許可を確認してください。");
+      }
+    );
+  }, [locateTrigger]);
 
   return <div ref={containerRef} className="w-full h-full" />;
 }
