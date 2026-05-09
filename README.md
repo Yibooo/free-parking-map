@@ -2,6 +2,8 @@
 
 東京都内の駐車場付き施設を地図上に可視化し、家族のお出かけをサポートする Web アプリ。
 
+**本番URL**: https://free-parking-map.vercel.app
+
 ## 特徴
 
 - 駐車場の料金条件（A〜E）でフィルタリング
@@ -16,7 +18,7 @@
 
 ## 技術スタック
 
-- **Frontend**: Next.js 14 (App Router) + Tailwind CSS + shadcn/ui
+- **Frontend**: Next.js 16 (App Router) + Tailwind CSS + shadcn/ui
 - **地図**: Leaflet + OpenStreetMap（完全無料）
 - **Backend/DB**: Convex
 - **スクレイピング**: Playwright + Cheerio
