@@ -10,6 +10,7 @@
 
 import type * as facilities from "../facilities.js";
 import type * as seed from "../seed.js";
+import type * as stats from "../stats.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   facilities: typeof facilities;
   seed: typeof seed;
+  stats: typeof stats;
 }>;
 
 /**

@@ -12,7 +12,12 @@
     "scrape:michinoeki": "tsx scraper/index.ts --source=michinoeki",
     "scrape:parks": "tsx scraper/index.ts --source=parks",
     "scrape:museums": "tsx scraper/index.ts --source=museums",
-    "scrape:commercial": "tsx scraper/index.ts --source=commercial"
+    "scrape:commercial": "tsx scraper/index.ts --source=commercial",
+    "scrape:onsen": "tsx scraper/index.ts --source=onsen",
+    "scrape:zoo": "tsx scraper/index.ts --source=zoo",
+    "scrape:cinema": "tsx scraper/index.ts --source=cinema",
+    "scrape:farm": "tsx scraper/index.ts --source=farm",
+    "scrape:library": "tsx scraper/index.ts --source=library"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
